@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments - SHC System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Appointments</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'appointments:create_appointment' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Appointment
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <form class="row g-3" method="get">
+            <div class="col-md-4">
+                <input type="date" name="date" class="form-control" value="{{ request.GET.date }}" placeholder="Filter by date">
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for status, label in appointment_status_choices %}
+                    <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'appointments:appointment_list' %}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>
+                            {{ appointment.appointment_date|date:"M d, Y" }}<br>
+                            <small class="text-muted">{{ appointment.appointment_time|time:"H:i" }}</small>
+                        </td>
+                        <td>{{ appointment.patient.name }}</td>
+                        <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                        <td>
+                            <span class="badge bg-{{ appointment.status|lower }}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ appointment.priority|lower }}">
+                                {{ appointment.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                {% if appointment.status == 'SCHEDULED' %}
+                                <button type="button" 
+                                        class="btn btn-sm btn-success update-status" 
+                                        data-appointment-id="{{ appointment.pk }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#updateStatusModal">
+                                    <i class="fas fa-edit"></i> Update
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No appointments found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Appointment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">New Status</label>
+                        <select class="form-select" name="status">
+                            <option value="SCHEDULED">Scheduled</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                            <option value="NO_SHOW">No Show</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                Previous
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                {{ num }}
+            </a>
+        </li>
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.date %}&date={{ request.GET.date }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                Next
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const updateStatusModal = document.getElementById('updateStatusModal');
+    const updateStatusForm = document.getElementById('updateStatusForm');
+    
+    document.querySelectorAll('.update-status').forEach(button => {
+        button.addEventListener('click', function() {
+            const appointmentId = this.dataset.appointmentId;
+            updateStatusForm.action = `/appointments/${appointmentId}/update-status/`;
+        });
+    });
+});
+</script>
+{% endblock %}

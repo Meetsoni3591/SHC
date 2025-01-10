@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment Details - SHC System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Appointment Details</h3>
+        <div>
+            {% if appointment.status == 'SCHEDULED' %}
+            <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                <i class="fas fa-edit"></i> Update Status
+            </button>
+            {% endif %}
+            <a href="{% url 'appointments:appointment_list' %}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Appointment Information -->
+            <div class="col-md-6">
+                <h4>Appointment Information</h4>
+                <table class="table">
+                    <tr>
+                        <th>Date:</th>
+                        <td>{{ appointment.appointment_date|date:"F d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Time:</th>
+                        <td>{{ appointment.appointment_time|time:"H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span class="badge bg-{{ appointment.status|lower }}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Priority:</th>
+                        <td>
+                            <span class="badge bg-{{ appointment.priority|lower }}">
+                                {{ appointment.get_priority_display }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Doctor Information -->
+            <div class="col-md-6">
+                <h4>Doctor Information</h4>
+                <table class="table">
+                    <tr>
+                        <th>Name:</th>
+                        <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Specialization:</th>
+                        <td>{{ appointment.doctor.specialization }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact:</th>
+                        <td>{{ appointment.doctor.contact_number }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Patient Information -->
+            <div class="col-md-6">
+                <h4>Patient Information</h4>
+                <table class="table">
+                    <tr>
+                        <th>Name:</th>
+                        <td>{{ appointment.patient.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Age:</th>
+                        <td>{{ appointment.patient.age }}</td>
+                    </tr>
+                    <tr>
+                        <th>Blood Group:</th>
+                        <td>{{ appointment.patient.blood_group }}</td>
+                    </tr>
+                    <tr>
+                        <th>Contact:</th>
+                        <td>{{ appointment.patient.contact_number }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Medical Details -->
+            <div class="col-md-6">
+                <h4>Medical Details</h4>
+                <div class="mb-3">
+                    <h6>Reason for Visit</h6>
+                    <p class="border p-2 rounded">{{ appointment.reason }}</p>
+                </div>
+                {% if appointment.symptoms %}
+                <div class="mb-3">
+                    <h6>Symptoms</h6>
+                    <p class="border p-2 rounded">{{ appointment.symptoms }}</p>
+                </div>
+                {% endif %}
+                {% if appointment.prescription %}
+                <div class="mb-3">
+                    <h6>Prescription</h6>
+                    <p class="border p-2 rounded">{{ appointment.prescription|linebreaks }}</p>
+                </div>
+                {% endif %}
+                {% if appointment.notes %}
+                <div class="mb-3">
+                    <h6>Doctor's Notes</h6>
+                    <p class="border p-2 rounded">{{ appointment.notes|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if appointment.follow_up_date %}
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-calendar"></i>
+            Follow-up appointment scheduled for {{ appointment.follow_up_date|date:"F d, Y" }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Appointment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'appointments:update_appointment_status' appointment.pk %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">New Status</label>
+                        <select class="form-select" name="status">
+                            <option value="SCHEDULED" {% if appointment.status == 'SCHEDULED' %}selected{% endif %}>Scheduled</option>
+                            <option value="COMPLETED" {% if appointment.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                            <option value="CANCELLED" {% if appointment.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                            <option value="NO_SHOW" {% if appointment.status == 'NO_SHOW' %}selected{% endif %}>No Show</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

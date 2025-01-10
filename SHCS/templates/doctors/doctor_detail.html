@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Dr. {{ doctor.user.get_full_name }} - SHC System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Dr. {{ doctor.user.get_full_name }}</h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Professional Information</h4>
+                <table class="table">
+                    <tr>
+                        <th>Specialization:</th>
+                        <td>{{ doctor.specialization }}</td>
+                    </tr>
+                    <tr>
+                        <th>License Number:</th>
+                        <td>{{ doctor.license_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Experience:</th>
+                        <td>{{ doctor.experience_years }} years</td>
+                    </tr>
+                    <tr>
+                        <th>Consultation Fee:</th>
+                        <td>${{ doctor.consultation_fee }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h4>Contact & Availability</h4>
+                <table class="table">
+                    <tr>
+                        <th>Contact Number:</th>
+                        <td>{{ doctor.contact_number }}</td>
+                    </tr>
+                    <tr>
+                        <th>Address:</th>
+                        <td>{{ doctor.address }}</td>
+                    </tr>
+                    <tr>
+                        <th>Available Days:</th>
+                        <td>{{ doctor.available_days }}</td>
+                    </tr>
+                    <tr>
+                        <th>Timing:</th>
+                        <td>{{ doctor.available_time_start }} - {{ doctor.available_time_end }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h4>Schedule an Appointment</h4>
+            <a href="{% url 'appointments:create_appointment' %}?doctor={{ doctor.pk }}" class="btn btn-primary">
+                Book Appointment
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

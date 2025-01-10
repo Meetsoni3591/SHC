@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}My Schedule - SHC System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">My Schedule</h3>
+        <div>
+            <a href="#" class="btn btn-light" id="prevDay">Previous Day</a>
+            <span class="mx-2 text-white" id="currentDate">{{ current_date|date:"F d, Y" }}</span>
+            <a href="#" class="btn btn-light" id="nextDay">Next Day</a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for appointment in appointments %}
+                    <tr>
+                        <td>{{ appointment.appointment_time }}</td>
+                        <td>{{ appointment.patient.name }}</td>
+                        <td>{{ appointment.reason }}</td>
+                        <td>
+                            <span class="badge bg-{{ appointment.status|lower }}">
+                                {{ appointment.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" 
+                                   class="btn btn-sm btn-primary">View</a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-success update-status" 
+                                        data-appointment-id="{{ appointment.pk }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#updateStatusModal">
+                                    Update Status
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No appointments scheduled.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Appointment Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">New Status</label>
+                        <select class="form-select" name="status">
+                            <option value="SCHEDULED">Scheduled</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                            <option value="NO_SHOW">No Show</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status update modal handling
+    const updateStatusModal = document.getElementById('updateStatusModal');
+    const updateStatusForm = document.getElementById('updateStatusForm');
+    
+    document.querySelectorAll('.update-status').forEach(button => {
+        button.addEventListener('click', function() {
+            const appointmentId = this.dataset.appointmentId;
+            updateStatusForm.action = `/appointments/${appointmentId}/update-status/`;
+        });
+    });
+
+    // Date navigation
+    const prevDayBtn = document.getElementById('prevDay');
+    const nextDayBtn = document.getElementById('nextDay');
+    const currentDateSpan = document.getElementById('currentDate');
+    
+    let currentDate = new Date('{{ current_date|date:"Y-m-d" }}');
+    
+    function updateSchedule(date) {
+        window.location.href = `?date=${date.toISOString().split('T')[0]}`;
+    }
+    
+    prevDayBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentDate.setDate(currentDate.getDate() - 1);
+        updateSchedule(currentDate);
+    });
+    
+    nextDayBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentDate.setDate(currentDate.getDate() + 1);
+        updateSchedule(currentDate);
+    });
+});
+</script>
+{% endblock %}

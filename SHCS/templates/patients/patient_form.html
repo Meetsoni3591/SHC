@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}
+        Edit Patient - {{ form.instance.name }}
+    {% else %}
+        Add New Patient
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">
+            {% if form.instance.pk %}
+                Edit Patient Information
+            {% else %}
+                Add New Patient
+            {% endif %}
+        </h3>
+    </div>
+    <div class="card-body">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Personal Information -->
+                <div class="col-md-6">
+                    <h4 class="mb-3">Personal Information</h4>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Full Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback">{{ form.name.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="invalid-feedback">{{ form.date_of_birth.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="invalid-feedback">{{ form.gender.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                        {{ form.blood_group }}
+                        {% if form.blood_group.errors %}
+                            <div class="invalid-feedback">{{ form.blood_group.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="col-md-6">
+                    <h4 class="mb-3">Contact Information</h4>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.contact_number.id_for_label }}" class="form-label">Contact Number</label>
+                        {{ form.contact_number }}
+                        {% if form.contact_number.errors %}
+                            <div class="invalid-feedback">{{ form.contact_number.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="invalid-feedback">{{ form.email.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="invalid-feedback">{{ form.address.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4 class="mb-3">Emergency Contact</h4>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Emergency Contact Name</label>
+                        {{ form.emergency_contact_name }}
+                        {% if form.emergency_contact_name.errors %}
+                            <div class="invalid-feedback">{{ form.emergency_contact_name.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.emergency_contact_number.id_for_label }}" class="form-label">Emergency Contact Number</label>
+                        {{ form.emergency_contact_number }}
+                        {% if form.emergency_contact_number.errors %}
+                            <div class="invalid-feedback">{{ form.emergency_contact_number.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4 class="mb-3">Medical Information</h4>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label for="{{ form.medical_history.id_for_label }}" class="form-label">Medical History</label>
+                        {{ form.medical_history }}
+                        {% if form.medical_history.errors %}
+                            <div class="invalid-feedback">{{ form.medical_history.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.allergies.id_for_label }}" class="form-label">Allergies</label>
+                        {{ form.allergies }}
+                        {% if form.allergies.errors %}
+                            <div class="invalid-feedback">{{ form.allergies.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="{{ form.current_medications.id_for_label }}" class="form-label">Current Medications</label>
+                        {{ form.current_medications }}
+                        {% if form.current_medications.errors %}
+                            <div class="invalid-feedback">{{ form.current_medications.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    {% if form.instance.pk %}
+                        Update Patient
+                    {% else %}
+                        Add Patient
+                    {% endif %}
+                </button>
+                <a href="{% url 'patients:patient_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}

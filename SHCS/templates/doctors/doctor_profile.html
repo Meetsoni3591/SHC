@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - SHC System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Profile Information</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Dr. {{ doctor.user.get_full_name }}</h5>
+                <p class="card-text">
+                    <strong>Specialization:</strong> {{ doctor.specialization }}<br>
+                    <strong>License Number:</strong> {{ doctor.license_number }}<br>
+                    <strong>Experience:</strong> {{ doctor.experience_years }} years<br>
+                    <strong>Contact:</strong> {{ doctor.contact_number }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Today's Appointments</h4>
+            </div>
+            <div class="card-body">
+                {% for appointment in doctor.appointments.all %}
+                    {% if appointment.appointment_date == today and appointment.status == 'SCHEDULED' %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ appointment.patient.name }}</h5>
+                                <p class="card-text">
+                                    <strong>Time:</strong> {{ appointment.appointment_time }}<br>
+                                    <strong>Reason:</strong> {{ appointment.reason }}<br>
+                                    <strong>Priority:</strong> {{ appointment.get_priority_display }}
+                                </p>
+                                <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="btn btn-primary btn-sm">View Details</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="text-muted">No appointments scheduled for today.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Availability Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Available Days</label>
+                        <input type="text" class="form-control" name="available_days" value="{{ doctor.available_days }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" class="form-control" name="available_time_start" value="{{ doctor.available_time_start|time:'H:i' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control" name="available_time_end" value="{{ doctor.available_time_end|time:'H:i' }}">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Availability</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
